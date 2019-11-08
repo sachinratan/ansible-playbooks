@@ -1,0 +1,120 @@
+---
+  - hosts: all 
+    user: root
+    vars_files: env_variables
+    tasks:
+
+        - name: Disabling the SELinux on all the nodes.
+          command: "setenforce 0"
+
+        - name: Updating the SELinux config file to disable the SELinux.
+          lineinfile:
+                path: /etc/sysconfig/selinux
+                regexp: " SELINUX=enforcing "
+                line: " SELINUX=disabled "
+                state: present
+                backup: yes
+
+        - name: Enabling the kernal module (br_ntefilter) for kubernetes installation.
+          command: "modprobe br_netfilter"
+
+        - name: Updating the IPtables for same.
+          command: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+
+        - name: Disable SWAP for kubernetes installation.
+          command: "swapoff -a"
+        
+        - name: install dependencies packages for docker.
+          yum:
+            state: present
+            name:
+              - yum-utils
+              - device-mapper-persistent-data
+              - lvm2
+
+        - name: Add Docker Repo.
+          get_url:
+              url: https://download.docker.com/linux/centos/docker-ce.repo
+              dest: /etc/yum.repos.d/docker-ce.repo
+              mode: 0644
+        
+        - name: Installing docker latest version.
+          yum:
+            name: docker-ce
+            state: present
+
+        - name: Adding the repo for kubernetes.
+          yum_repository:
+             name: kubernetes
+             description: Kubernetes Repo
+             baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+             enabled: yes
+             gpgcheck: yes
+             repo_gpgcheck: yes
+             gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg
+                     https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+        - name: Installing the kubernetes Package.
+          yum:
+            state: present
+            name:
+              - kubelet
+              - kubeadm
+              - kubectl
+
+        - name: Post Installation restart the server.
+          command: shutdown -r +2 "Rebooting systems after patching"
+          async: 0
+          poll: 0
+
+        - name: Pause the ansible playbook execution for 3 minute to get systems up and running
+          pause:
+           minutes: 3
+
+        - name: Verify that the systems are up and running
+          local_action:
+           module: wait_for
+             host={{ inventory_hostname }}
+             port=22
+             delay=15
+             timeout=300
+
+        - name: Start Docker and Kubernetes Engine.
+          service:
+            name: "{{ item }}"
+            state: restarted
+            enabled: yes
+          with_items:
+              - docker
+              - kubelet
+        - name: Pulling images required for setting up a Kubernetes cluster
+          when: inventory_hostname in groups['Ansi-Master']        
+          shell: kubeadm config images pull        
+
+        - name: Initializing the kubernetes cluster on Kubeadm server.
+          when: inventory_hostname in groups['Ansi-Master']
+          shell: kubeadm init --apiserver-advertise-address {{ad_addr}} --pod-network-cidr={{cidr_v}}
+          register: output
+
+        - name: Storing Logs and Generated token for future purpose on Kubeadm server.
+          when: inventory_hostname in groups['Ansi-Master']
+          local_action: copy content={{ output.stdout }} dest={{ token_file }}
+
+        - name: Copying the required files in Kube home directory on Kubeadm server.
+          when: inventory_hostname in groups['Ansi-Master']
+          shell: |
+             mkdir -p $HOME/.kube
+             sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+             sudo chown $(id -u):$(id -g) $HOME/.kube/config
+          
+        - name: Install Network Add-on on Kubeadm server.
+          when: inventory_hostname in groups['Ansi-Master']
+          command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+        - name: Copying token to kubernetes worker nodes.
+          when: inventory_hostname in groups['Ansi-Nodes']
+          copy: src={{ token_file }} dest=join_token
+
+        - name: Joining worker nodes with kubernetes master
+          when: inventory_hostname in groups['Ansi-Nodes']
+          shell: echo $($(grep -i 'kubeadm join' join_token))

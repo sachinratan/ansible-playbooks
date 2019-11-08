@@ -1,0 +1,17 @@
+---
+  - hosts: ansi-nodes
+    user: root
+    tasks:
+
+       - name: Putting the entry for all the ansible nodes in hosts file.
+         lineinfile:
+               path: /etc/hosts
+               line: '{{ item }}'
+               backup: yes
+               state: present
+         with_items:    
+               - '172.31.11.131 ansiblemaster'
+               - '172.31.13.224 ansiblenode01'
+               - '172.31.13.144 ansiblenode02'
+               - '172.31.5.61   ansiblenode03'
+
