@@ -3,13 +3,13 @@
   gather_facts: False
 
   vars:
-      key: rymum-kp
+      key: test-kp
       user: centos
       instance_type: t2.micro
       SG: WebServer_SG
       AMI: ami-016ec067d44808c4f
       region: ap-south-1
-      subnet: subnet-b0734ffd
+      subnet: subnet-xxxxxxxxxxxxx
       count: 1
       volumes:
                 - device_name: /dev/sda1
