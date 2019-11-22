@@ -1,9 +1,0 @@
----
-  - hosts: Web-Servers 
-    user: root
-    tasks:
-
-        - name: Copying war file on to tomcat Webserver
-          copy:
-            src: /etc/ansible/webapp/target/webapp.war
-            dest: /opt/apache-tomcat-8.5.47/webapps/
