@@ -7,8 +7,8 @@
      - name: Sync the local folder to s3 bucket.
        s3_sync:
          bucket: ansiautocreate
-         file_root: /home/sshinde
-         include: upload-ssh.yml
+         file_root: /home/xyz
+         include: abc.txt
          exclude: .*
          region: ap-south-1
          permission: private
