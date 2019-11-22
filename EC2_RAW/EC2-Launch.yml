@@ -6,7 +6,7 @@
       region: ap-south-1
       instance_type: t2.micro
       ami: ami-040c7ad0a93be494e #ami-5b673c34  # Redhat
-      keypair: rymum-kp # pem file name
+      keypair: test-kp # pem file name
       SG: WebServer_SG # Security Group Name
       subnet: subnet-b0734ffd
 
@@ -54,7 +54,7 @@
         minutes: 1
 
     - name: SSH Key Export
-      shell: cat ~/.ssh/id_rsa.pub | ssh -i rymum-kp.pem ec2-user@{{ item.private_ip }} "cat >> ~/.ssh/authorized_keys; sudo cp ~/.ssh/authorized_keys /root/.ssh/authorized_keys"
+      shell: cat ~/.ssh/id_rsa.pub | ssh -i test-kp.pem ec2-user@{{ item.private_ip }} "cat >> ~/.ssh/authorized_keys; sudo cp ~/.ssh/authorized_keys /root/.ssh/authorized_keys"
       become_user: ec2-user
       delegate_to: localhost
       with_items: "{{ ec2.instances }}"
