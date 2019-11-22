@@ -1,11 +1,11 @@
 ---
 # vars file for awsec2create
   user: centos
-  key: rymum-kp
+  key: test-kp
   region: ap-south-1
   SG: WebServer_SG
   instance_type: t2.micro
-  subnet: subnet-b0734ffd
+  subnet: subnet-xxxxxxxxxx
   AMI: ami-016ec067d44808c4f
   count: 1
   volumes:
