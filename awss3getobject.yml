@@ -7,6 +7,6 @@
      - name: Download the object to local folder from S3 bucket.
        aws_s3:
          bucket: ansiautocreate
-         object: upload-ssh.yml
-         dest: /etc/ansible/upload-ssh.yml
+         object: s3_object_name
+         dest: /folder/path
          mode: get
