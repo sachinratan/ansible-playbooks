@@ -4,7 +4,7 @@
   security_group: WebServer_SG 
   image: ami-028d0ae22c93976f0 
   region: ap-south-1
-  keypair: rymum-kp 
+  keypair: test-kp 
   count: 1
   Owner: Sachin Shinde
   Name: AnsiTestServer
