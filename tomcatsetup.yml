@@ -1,0 +1,95 @@
+---
+  - hosts: Web-Servers 
+    user: root
+
+    tasks:
+        - name: Install Java Open JDK For Tomcat Server
+          yum: name=java-1.8.0-openjdk state=present
+
+        - name: Download Tomcat From tomcat.apache.org.
+          get_url:
+            url: http://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.47/bin/apache-tomcat-8.5.47.tar.gz
+            dest: /opt
+            mode: 0755
+
+        - name: Extract The apache-tomcat tar file.
+          unarchive:
+            src: /opt/apache-tomcat-8.5.47.tar.gz 
+            dest: /opt
+            remote_src: yes
+
+        - name: Add Executing Permission To startup.sh and shutdown.sh
+          file:
+            path: /opt/apache-tomcat-8.5.47/bin/startup.sh
+            mode: '751'
+        
+        - name: Add Executing Permission To shutdown.sh
+          file:
+            path: /opt/apache-tomcat-8.5.47/bin/shutdown.sh
+            mode: '751'
+        
+        - name: Creating Link Files For Tomcat startup.sh
+          file:
+            src: /opt/apache-tomcat-8.5.47/bin/startup.sh
+            dest: /usr/local/bin/tomcatup
+            state: link
+
+        - name: Creating Link Files For Tomcat shutdown.sh
+          file:
+            src: /opt/apache-tomcat-8.5.47/bin/shutdown.sh
+            dest: /usr/local/bin/tomcatup
+            state: link
+
+        - name: Starting the tomcat service.
+          shell: sh /opt/apache-tomcat-8.5.47/bin/startup.sh 
+
+        - name: Comment out the Value class of context.xml file in webapp directory.
+          replace:
+            path: /opt/apache-tomcat-8.5.47/webapps/host-manager/META-INF/context.xml
+            after: '<Context'
+            before: '<Manager'
+            regexp: '{{ item.regexp }}'
+            replace: '{{ item.line }}'
+          with_items:
+                - { regexp: '<Valve', line: '<!--Valve' }
+                - { regexp: '/>', line: '--/>' }
+
+        - name: Comment out the Value class of context.xml file in webapp directory.
+          replace:
+            path: /opt/apache-tomcat-8.5.47/webapps/manager/META-INF/context.xml
+            after: '<Context'
+            before: '<Manager'
+            regexp: '{{ item.regexp }}'
+            replace: '{{ item.line }}'
+          with_items:
+                - { regexp: '<Valve', line: '<!--Valve' }
+                - { regexp: '/>', line: '--/>' }
+
+
+        - name: Stop tomcat Service.
+          shell: sh /opt/apache-tomcat-8.5.47/bin/shutdown.sh
+
+        - name: Start tomcat Service.
+          shell: sh /opt/apache-tomcat-8.5.47/bin/startup.sh
+
+        - name: Add the roles and user tomcat-user.xml file.
+          blockinfile:
+            state: present
+            insertbefore: '</tomcat-users>'
+            dest: /opt/apache-tomcat-8.5.47/conf/tomcat-users.xml
+            marker: "<!-- add services ANSIBLE MANAGED BLOCK -->"
+            content: |
+                <role rolename="manager-gui"/>
+                <role rolename="manager-script"/>
+                <role rolename="manager-jmx"/>
+                <role rolename="manager-status"/>
+                <user username="admin" password="20infra13!" roles="manager-gui, manager-script, manager-jmx, manager-status"/>
+                <user username="deployer" password="20infra13!" roles="manager-script"/>
+                <user username="tomcat" password="20infra13!" roles="manager-gui"/>
+
+        - name: Stop tomcat Service.
+          shell: sh /opt/apache-tomcat-8.5.47/bin/shutdown.sh
+
+        - name: Start tomcat Service.
+          shell: sh /opt/apache-tomcat-8.5.47/bin/startup.sh
+

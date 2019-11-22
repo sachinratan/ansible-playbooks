@@ -1,0 +1,6 @@
+---
+  - name: Pause playbook execution to spin up the EC2.
+    pause:
+      prompt: Wait for 2 mins
+      minutes: 1
+

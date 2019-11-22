@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+     - name: Create an empty bucket
+       s3_bucket:
+         name: ansiautocreate
+         state: present
+         region: ap-south-1
+         versioning: yes

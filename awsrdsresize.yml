@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Resizing the RDS Instance Storage.
+      local_action:
+        module: rds
+        command: modify
+        instance_name: ansilaunchdb
+        size: 250
+        iops: 1000
+        region: ap-south-1
+        apply_immediately: yes
+        wait: yes
+        wait_timeout: 500
+      register: rds
+
+    - debug:
+        msg: "Resized the RDS Instance with endpoint {{ rds.instance.endpoint }}"
+

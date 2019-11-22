@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+     - name: Copy the object from local folder to S3 bucket.
+       aws_s3:
+         bucket: ansiautocreate
+         object: kube_token
+         src: /etc/ansible/join_token
+         mode: put

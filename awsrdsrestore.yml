@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+    region: ap-south-1
+    instance_type: db.m5.xlarge
+    subnet: default
+    zone:
+    rds_name: AnsiLaunchDB
+    snap: ansilaunchdb-snapshot
+
+  tasks:
+    - name: Restore RDS Instance From Snapshot.
+      local_action:
+        module: rds
+        command: restore
+        snapshot: "{{ snap }}"
+        instance_name: "{{ rds_name }}"
+        region: "{{ region }}"
+        instance_type: "{{ instance_type }}"
+        subnet: "{{ subnet }}"
+        multi_zone: no
+        publicly_accessible: no
+        wait: yes
+        wait_timeout: 500
+        zone: "{{ zone }}"
+      register: rds
+
+    - debug:
+        msg: "The new db endpoint is {{ rds.instance.endpoint }}"
+

@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+     - name: Sync the local folder to s3 bucket.
+       s3_sync:
+         bucket: ansiautocreate
+         file_root: /home/sshinde
+         include: upload-ssh.yml
+         exclude: .*
+         region: ap-south-1
+         permission: private
+         mode: push

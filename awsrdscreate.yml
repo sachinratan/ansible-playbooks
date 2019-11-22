@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+    region: ap-south-1
+    size: 200 
+    instance_type: db.m5.xlarge
+    db_engine: MySQL    
+    engine_version: 5.6.40
+    parameter_group: default
+    subnet: default
+    security_groups: sg-0b1d90c0abf155ba6
+    iops: 1000
+    maint_window: "Sat:20:00-Sat:21:00"
+    backup_window: "00:00-01:00"
+    backup_retention: 7
+    zone: 
+    rds_instance_name: AnsiLaunchDB
+    db_name: AnsiLaunchDB
+    username: DBAdmin
+    password: 20infra13!
+
+  tasks:
+    - name: Create RDS Instance On AWS.
+      local_action:
+        module: rds
+        command: create
+        instance_name: "{{ rds_instance_name }}"
+        region: "{{ region }}"
+        size: "{{ size }}"
+        instance_type: "{{ instance_type }}"
+        db_engine: "{{ db_engine }}"
+        subnet: "{{ subnet }}"
+        multi_zone: no 
+        db_name: "{{ db_name }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        vpc_security_groups: "{{ security_groups }}"
+        iops: "{{ iops }}"
+        maint_window: "{{ maint_window }}"
+        backup_window: "{{ backup_window }}"
+        backup_retention: "{{ backup_retention }}"
+        publicly_accessible: no
+        wait: yes
+#       wait_timeout: 300
+        zone: "{{ zone }}"
+      register: rds
+
+    - debug:
+        msg: "The new db endpoint is {{ rds.instance.endpoint }}"

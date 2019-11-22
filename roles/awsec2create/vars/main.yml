@@ -1,0 +1,15 @@
+---
+# vars file for awsec2create
+  user: centos
+  key: rymum-kp
+  region: ap-south-1
+  SG: WebServer_SG
+  instance_type: t2.micro
+  subnet: subnet-b0734ffd
+  AMI: ami-016ec067d44808c4f
+  count: 1
+  volumes:
+            - device_name: /dev/sda1
+              volume_type: gp2
+              volume_size: 10
+              delete_on_termination: true

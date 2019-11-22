@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+     - name: Download the object to local folder from S3 bucket.
+       aws_s3:
+         bucket: ansiautocreate
+         object: upload-ssh.yml
+         dest: /etc/ansible/upload-ssh.yml
+         mode: get

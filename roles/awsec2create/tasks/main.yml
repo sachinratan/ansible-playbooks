@@ -1,0 +1,11 @@
+---
+# tasks file for awsec2create
+- import_tasks: ec2create.yml
+- import_tasks: addtohostgroup.yml
+- import_tasks: debugIP.yml
+- import_tasks: addtoinventory.yml
+- import_tasks: pause.yml
+- import_tasks: sshkeyexport.yml
+- import_tasks: installpython.yml
+- import_tasks: refreshinventory.yml
+- import_tasks: installapache.yml

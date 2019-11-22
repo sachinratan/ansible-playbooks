@@ -1,0 +1,19 @@
+---
+  - name: Create an ec2 instance
+    ec2:
+       key_name: "{{ key }}"
+       group: "{{ SG }}"
+       instance_type: "{{ instance_type}}"
+       image: "{{ AMI }}"
+       wait: true
+       region: "{{ region }}"
+       count: "{{ count }}"
+       count_tag:
+          Name: "AnsiAutoLaunch"
+       instance_tags:
+          Name: "AnsiAutoLaunch"
+       volumes: "{{ volumes }}"
+       vpc_subnet_id: "{{ subnet }}"
+       assign_public_ip: yes
+    register: ec2
+

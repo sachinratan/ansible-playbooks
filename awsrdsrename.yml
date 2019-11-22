@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Renaming The RDS Instance DB Identifier.
+      local_action:
+        module: rds
+        command: modify
+        instance_name: AnsiAutoLaunchDB
+        new_instance_name: AnsiLaunchDB
+        region: ap-south-1
+        apply_immediately: yes
+        wait: yes
+      register: rds
+
+    - debug:
+        msg: "After renaming the new db endpoint is {{ rds.instance.endpoint }}"
+
+
+##################~~ While Renaming the DB Instance Identifier RDS Instance Will Get Rebooted So Downtime Is Required. ~~########################################

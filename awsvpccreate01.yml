@@ -1,0 +1,102 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+      region: "ap-south-1"
+      vpc_name: "Ansible-VPC"
+      vpc_cidr_block: "10.0.0.0/16"
+      public_subnet_1_cidr: "10.0.0.0/24"
+      private_subnet_1_cidr: "10.0.1.0/24"
+      public_subnet_2_cidr:  "10.0.10.0/24"
+      private_subnet_2_cidr: "10.0.11.0/24"
+
+  tasks:
+    - name: Create VPC
+      ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_block  }}"
+        region: "{{ region }}"
+        state: "present"
+      register: my_vpc
+    
+    - name: Set VPC ID In Variable
+      set_fact:
+        vpc_id: "{{ my_vpc.vpc.id }}"
+
+    - name: Create Public Subnet
+      ec2_vpc_subnet:
+        state: "present"
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ public_subnet_1_cidr }}"
+        az: "{{ region }}a"
+        region: "{{ region }}"
+        resource_tags:
+          Name: "Ansible Public Subnet"
+      register: my_public_subnet
+
+    - name: Set Public Subnet ID In Variable
+      set_fact:
+        public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+
+    - name: Create Private Subnet
+      ec2_vpc_subnet:
+        state: "present"
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ private_subnet_1_cidr }}"
+        az: "{{ region }}a"
+        region: "{{ region }}"
+        resource_tags:
+          Name: "Ansible private Subnet"
+      register: my_private_subnet
+
+    - name: Set Private Subnet ID In Variable
+      set_fact:
+        private_subnet_id: "{{ my_private_subnet.subnet.id }}"
+
+    - name: Create Internet Gateway for VPC
+      ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: "present"
+      register: my_vpc_igw
+
+    - name: Set Internet Gateway ID in variable
+      set_fact:
+        igw_id: "{{ my_vpc_igw.gateway_id }}"
+
+    - name: Set Up Public Subnet Route Table
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        tags:
+          Name: "Ansible Public"
+        subnets:
+          - "{{ my_public_subnet.subnet.id }}"
+        routes:
+          - dest: "0.0.0.0/0"
+            gateway_id: "{{ my_vpc_igw.gateway_id }}"
+     
+    - name: Create New NAT Gateway Using EIP Allocation ID
+      ec2_vpc_nat_gateway:
+        state: "present"
+        subnet_id: "{{ my_public_subnet.subnet.id }}"
+        allocation_id: "eipalloc-04d77a551ef6283aa"
+        region: "{{ region }}"
+      register: my_nat_gateway
+
+    - name: Set NAT Gateway ID in variable
+      set_fact:
+        nat_gateway_id: "{{ my_nat_gateway.nat_gateway_id }}"
+
+    - name: Set up private subnet route table
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        tags:
+          Name: "Ansible Private"
+        subnets:
+          - "{{ my_private_subnet.subnet.id }}"
+        routes:
+          - dest: "0.0.0.0/0"
+            gateway_id: "{{ nat_gateway_id }}"

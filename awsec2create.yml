@@ -1,0 +1,87 @@
+- name: Create a new Demo EC2 instance
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+      key: rymum-kp
+      user: centos
+      instance_type: t2.micro
+      SG: WebServer_SG
+      AMI: ami-016ec067d44808c4f
+      region: ap-south-1
+      subnet: subnet-b0734ffd
+      count: 1
+      volumes:
+                - device_name: /dev/sda1
+                  volume_type: gp2
+                  volume_size: 10
+                  delete_on_termination: true
+
+  tasks:
+
+    - name: Create an ec2 instance
+      ec2:
+         key_name: "{{ key }}"
+         group: "{{ SG }}"  
+         instance_type: "{{ instance_type}}"
+         image: "{{ AMI }}"
+         wait: true
+         region: "{{ region }}"
+         count: "{{ count }}" 
+         count_tag:
+            Name: "AnsiAutoLaunch"
+         instance_tags:
+            Name: "AnsiAutoLaunch"
+         volumes: "{{ volumes }}"
+         vpc_subnet_id: "{{ subnet }}"
+         assign_public_ip: yes
+      register: ec2
+
+    - name: Add instance to host group
+      add_host:
+        hostname:  "{{ item.private_ip }}"
+        groups:
+        - Launched
+      with_items: "{{ ec2.instances }}"
+
+    - debug:
+        msg: Remote IP is "{{ item.public_ip }}"
+      with_items: "{{ec2.instances }}"
+
+    - name: Add in inventory file
+      become: true
+      lineinfile:
+        path: /etc/ansible/hosts
+        insertafter: '^[Launched]'
+        line: "{{ user }}@{{ item.private_ip }}"
+      with_items: "{{ec2.instances }}"
+
+    - pause:
+        prompt: Wait for 2 mins
+        minutes: 1
+
+    - name: SSH Key Export
+      shell: cat ~/.ssh/id_rsa.pub | ssh -i {{ key }}.pem {{ user }}@{{ item.private_ip }} "cat >> ~/.ssh/authorized_keys"
+      become_user: "{{ user }}"
+      delegate_to: localhost
+      with_items: "{{ ec2.instances }}"
+
+    - name: Install Python
+      shell:
+        ssh {{ user }}@{{ item.private_ip }}
+        sudo yum install python -y
+      with_items: "{{ ec2.instances }}"
+
+    - name: Refresh Inventory
+      meta: refresh_inventory
+
+- name: Configure Instance
+  hosts: Launched
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Install Apache
+      yum: name=httpd state=present update_cache=yes
+
+    - name: ensure apache is running
+      service: name=httpd state=started enabled=yes

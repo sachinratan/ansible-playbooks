@@ -1,0 +1,55 @@
+- name: Create VPC In AWS Account.
+  hosts: localhost
+  gather_facts: False
+  vars:
+        vpc_name: Ansible-VPC
+        vpc_cidr: 10.10.0.0/24
+        subnet_name: Ansible-Subnet
+        subnet_cidr: 10.10.0.0/26
+        igw_name: Ansible-IGW
+        route_name: Ansible-RT
+        region: ap-south-1
+
+  tasks:
+     - name: Create AWS VPC.
+       ec2_vpc_net:
+         name: "{{ vpc_name }}"
+         state: present
+         cidr_block: "{{ vpc_cidr }}"
+         region: "{{ region }}"
+         tenancy: default
+         dns_hostnames: yes
+       register: vpc
+ 
+     - name: Create the subnet and associate with VPC.
+       ec2_vpc_subnet:
+         state: present
+         vpc_id: "{{ vpc.vpc.id }}"
+         region: "{{ region }}"
+         cidr: "{{ subnet_cidr }}"
+         az: ap-south-1a
+         map_public: yes
+         resource_tags:
+           Name: "{{ subnet_name }}"
+       register: subnet
+
+     - name: Create the IGW and attach to VPC.
+       ec2_vpc_igw:
+         vpc_id: "{{ vpc.vpc.id }}"
+         region: "{{ region }}"
+         state: "present"
+         tags:
+           Name: "{{ igw_name }}"
+       register: igw
+
+     - name: Route traffic to IGW.
+       ec2_vpc_route_table:
+         vpc_id: "{{ vpc.vpc.id }}"
+         region: "{{ region }}"
+         subnets:
+           - "{{ subnet.subnet.id }}"
+         routes:
+           - dest: 0.0.0.0/0
+             gateway_id: "{{ igw.gateway_id  }}"
+         tags:
+           Name: "{{ route_name }}"

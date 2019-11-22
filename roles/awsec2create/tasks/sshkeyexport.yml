@@ -1,0 +1,7 @@
+---
+  - name: SSH Key Export
+    shell: cat ~/.ssh/id_rsa.pub | ssh -i {{ key }}.pem {{ user }}@{{ item.private_ip }} "cat >> ~/.ssh/authorized_keys"
+    become_user: "{{ user }}"
+    delegate_to: localhost
+    with_items: "{{ ec2.instances }}"
+

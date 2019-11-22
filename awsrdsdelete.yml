@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: no
+  
+  tasks:
+    - name: Deleting The RDS Instance.
+      local_action:
+        module: rds
+        command: delete
+        instance_name: ansilaunchdb 
+        region: ap-south-1
+        snapshot: ansilaunchdb-snapshot-01
+        wait: yes
+        wait_timeout: 600
+      register: rds
+
+    - debug:
+        msg: "Deleted The DB Instance with endpoint {{ rds.instance.endpoint }}"
+

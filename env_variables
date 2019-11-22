@@ -1,0 +1,9 @@
+###################################################################################
+# Dont Edit these below values, these are mandatory to configure kubernetes cluster
+
+ad_addr: 172.31.1.197 
+cidr_v: 172.16.0.0/16
+token_file: join_token
+
+###################################################################################
+# Dont Edit these above values, these are mandatory to configure kubernetes cluster

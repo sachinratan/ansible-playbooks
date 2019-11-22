@@ -1,0 +1,5 @@
+---
+# tasks file for Launch-EC2
+- import_tasks: SecurityGroup.yml
+- import_tasks: CreateEC2.yml
+- import_tasks: TagsEC2.yml
