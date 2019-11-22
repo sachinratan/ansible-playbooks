@@ -8,7 +8,7 @@
       ami: ami-040c7ad0a93be494e #ami-5b673c34  # Redhat
       keypair: test-kp # pem file name
       SG: WebServer_SG # Security Group Name
-      subnet: subnet-b0734ffd
+      subnet: subnet-xxxxxxx
 
   tasks:
 
