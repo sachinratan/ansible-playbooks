@@ -9,7 +9,7 @@
     engine_version: 5.6.40
     parameter_group: default
     subnet: default
-    security_groups: sg-0b1d90c0abf155ba6
+    security_groups: sg-xxxxxxxxxxxxx
     iops: 1000
     maint_window: "Sat:20:00-Sat:21:00"
     backup_window: "00:00-01:00"
@@ -18,7 +18,7 @@
     rds_instance_name: AnsiLaunchDB
     db_name: AnsiLaunchDB
     username: DBAdmin
-    password: 20infra13!
+    password: xxxxxxxx
 
   tasks:
     - name: Create RDS Instance On AWS.
