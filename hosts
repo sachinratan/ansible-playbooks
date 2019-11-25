@@ -44,18 +44,14 @@
 #A collection of database servers in the 'Ansible Nodes' group
 
 [Ansi-Master]
-#172.31.4.118
-172.31.1.197
 
 [Ansi-Nodes]
-172.31.9.88     ##dxbfireprod 
-172.31.8.117	##irescanfireprod
-172.31.1.197	##frkfireprod
+
 
 [Patch-Group]
 
 
 [Web-Servers]
-172.31.0.189
+
 
 [Launched]
