@@ -10,7 +10,7 @@
         sg: WebServer_SG
         ami: ami-016ec067d44808c4f
         region: ap-south-1
-        subnet: subnet-b0734ffd
+        subnet: subnet-xxxxxx
         count: 1
         volumes:
                 - device_name: /dev/sda1
